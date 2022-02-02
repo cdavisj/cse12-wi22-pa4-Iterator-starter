@@ -11,6 +11,7 @@
  */
 
 import java.util.AbstractList;
+import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
@@ -180,6 +181,9 @@ public class MyLinkedList<E> extends AbstractList<E> {
      * 
      * @param index index for new node
      * @param data  data for new node to hold
+     * @throws IndexOutOfBoundsException when {@code index} is less than 0 or
+     *                                   strictly greater than the {@link #size}
+     * @throws NullPointerException      when {@code data} is null
      */
     @Override
     public void add(int index, E data) {
@@ -223,6 +227,7 @@ public class MyLinkedList<E> extends AbstractList<E> {
      * 
      * @param data {@code data} for new {@link Node} to be added
      * @return {@code true} once new {@code Node} is appended
+     * @throws NullPointerException when {@code data} is null
      */
     public boolean add(E data) {
         // Check for invalid data
@@ -242,6 +247,9 @@ public class MyLinkedList<E> extends AbstractList<E> {
      * @param index {@code index} for {@code Node.data} to be changed
      * @param data  {@code data} for {@code Node.data} to be changed to
      * @return {@code Node.data} removed from node
+     * @throws IndexOutOfBoundsException when {@code index} is less than 0 or
+     *                                   inclusively greater than {@link #size}
+     * @throws NullPointerException      when {@code data} is null
      */
     public E set(int index, E data) {
         // Check for invalid index
@@ -267,6 +275,8 @@ public class MyLinkedList<E> extends AbstractList<E> {
      * 
      * @param index {@code index} of {@code Node} to be removed
      * @return {@link Node#data} from removed node
+     * @throws IndexOutOfBoundsException when {@code index} is less than 0 or
+     *                                   inclusively greater than {@link #size}
      */
     public E remove(int index) {
         // Check for invalid index
@@ -316,6 +326,9 @@ public class MyLinkedList<E> extends AbstractList<E> {
      * 
      * @param index {@code index} for {@code Node} to be returned
      * @return {@code Node} at specified {@code index} argument
+     * @throws IndexOutOfBoundsException when {@code index} is either less than
+     *                                   0 or inclusively greater than the list
+     *                                   {@link #size}
      */
     protected Node getNth(int index) {
         // Check for index out of bounds
@@ -335,27 +348,50 @@ public class MyLinkedList<E> extends AbstractList<E> {
     }
 
     /**
+     * Override of {@link AbstractList#listIterator()} to return an instance of
+     * {@link MyListIterator}.
+     * 
+     * @return a new {@link MyListIterator} object
+     */
+    public ListIterator<E> listIterator() {
+        return new MyListIterator();
+    }
+
+    /**
+     * Override of {@link AbstractList#iterator()} to return an instance of
+     * {@link MyListIterator}.
+     * 
+     * @return a new {@link MyListIterator} object
+     */
+    public Iterator<E> iterator() {
+        return new MyListIterator();
+    }
+
+    /**
      * An iterator for {@code MyListIterator} class to traverse the list in
      * either direction, modify the list, and get iterators current position in
-     * the list.
+     * the list. This class makes use of the {@link ListIterator} interface.
      * 
      * @author Caleb Davis
      */
     protected class MyListIterator implements ListIterator<E> {
         /**
-         * {@link Node} references to the left and right {@code Node}'s relative
-         * to the cursor position.
+         * {@link Node} reference to the {@code left} {@code Node} relative to
+         * the cursor position.
          */
-        Node left, right;
+        Node left;
+
+        /**
+         * {@link Node} reference to the {@code right} {@code Node} relative to
+         * the cursor position.
+         */
+        Node right;
 
         /**
          * Index of the {@link Node} returned by a call to {@link #next()}.
          */
         int idx;
 
-        // The current moving direction of the iterator. Becomes true when
-        // next() is called and false when previous() is called. Will begin as
-        // true, assuming the iterator will start with forward movement.
         /**
          * The current moving direction of the iterator. This is set
          * {@code true} when there is a call to {@link #next()}, and set
@@ -443,6 +479,7 @@ public class MyLinkedList<E> extends AbstractList<E> {
          * position backwards.
          * 
          * @return the previous element in the list
+         * @throws NoSuchElementException when there is no previous element
          */
         public E previous() {
             // Make sure the iterator has not reached the beginning of the list
@@ -468,8 +505,8 @@ public class MyLinkedList<E> extends AbstractList<E> {
          * iterator reached the end of the list.
          * 
          * @return the index of the element that would be returned by a call to
-         *         {@code next} or the list size if the iterator is at the end
-         *         of the list
+         *         {@code next} or the list {@link #size} if the iterator is at
+         *         the end of the list
          */
         public int nextIndex() {
             if (!this.hasNext()) {
@@ -504,6 +541,9 @@ public class MyLinkedList<E> extends AbstractList<E> {
          * {@code next} or {@code previous}. It can also only be done if
          * {@link #add(E)} has not been called after the last call to
          * {@code next} or {@code previous}.
+         * 
+         * @throws IllegalStateException when {@link #canRemoveOrSet} is
+         *                               {@code false}
          */
         public void remove() {
             // Check that we can set an element
@@ -542,6 +582,9 @@ public class MyLinkedList<E> extends AbstractList<E> {
          * 
          * @param element the element with which to replace the last element
          *                returned by {@code next} or {@code previous}.
+         * @throws NullPointerException  when {@code element} is {@code false}
+         * @throws IllegalStateException when {@link #canRemoveOrSet} is
+         *                               {@code null}
          */
         public void set(E element) {
             // Check validity of element
@@ -570,7 +613,8 @@ public class MyLinkedList<E> extends AbstractList<E> {
          * {@link #next()}, if any, and after the element that would be returned
          * by {@link #previous()}, if any.
          * 
-         * @param element the element to insert
+         * @param element the {@code element} to insert
+         * @throws NullPointerException when {@code element} is {@code null}
          */
         public void add(E element) {
             // Check validity of element
